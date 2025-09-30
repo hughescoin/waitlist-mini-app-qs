@@ -53,9 +53,18 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <button className={styles.closeButton} type="button">
-        ✕
-      </button>
+      <div className={styles.topButtons}>
+        <button 
+          className={styles.contextButton} 
+          type="button"
+          onClick={() => router.push("/context")}
+        >
+          Context
+        </button>
+        <button className={styles.closeButton} type="button">
+          ✕
+        </button>
+      </div>
       
       <div className={styles.content}>
         <div className={styles.waitlistForm}>
