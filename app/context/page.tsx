@@ -8,13 +8,25 @@ export default function Context() {
     const [context, setContext] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isMiniApp, setIsMiniApp] = useState<boolean>(false);
 
     useEffect(() => {
         const loadContext = async () => {
             try {
-                const contextData = await sdk.context;
-                console.log('Full context:', contextData);
-                setContext(contextData);
+                // Check if running in a Mini App
+                const miniAppStatus = await sdk.isInMiniApp();
+                console.log('Is Mini App:', miniAppStatus);
+                setIsMiniApp(miniAppStatus);
+
+                if (miniAppStatus) {
+                    // Only load context if in Mini App
+                    const contextData = await sdk.context;
+                    console.log('Full context:', contextData);
+                    setContext(contextData);
+                } else {
+                    console.log('Not in Mini App - context not available');
+                }
+                
                 setIsLoading(false);
             } catch (err) {
                 console.error('Error accessing context:', err);
@@ -27,16 +39,163 @@ export default function Context() {
     }, []);
 
     if (isLoading) {
-        return <div className="p-4">Loading context...</div>;
+        return (
+            <div style={{ 
+                minHeight: '100vh', 
+                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div className="text-center">
+                    <div className="mb-4 text-2xl">⏳</div>
+                    <p>Loading context...</p>
+                </div>
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="p-4 text-red-600">Error: {error}</div>;
+        return (
+            <div style={{ 
+                minHeight: '100vh', 
+                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div className="text-center text-red-400">
+                    <div className="mb-4 text-2xl">❌</div>
+                    <p>Error: {error}</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show message if not in Mini App
+    if (!isMiniApp) {
+        return (
+            <div style={{ 
+                minHeight: '100vh', 
+                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+                color: 'white',
+                position: 'relative'
+            }}>
+                {/* Back button */}
+                <div style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    left: '1rem'
+                }}>
+                    <button
+                        onClick={() => window.history.back()}
+                        style={{
+                            background: '#f7d954',
+                            color: '#000',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.background = '#f5d73a';
+                            target.style.transform = 'translateY(-2px)';
+                            target.style.boxShadow = '0 4px 15px rgba(247, 217, 84, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            const target = e.target as HTMLButtonElement;
+                            target.style.background = '#f7d954';
+                            target.style.transform = 'translateY(0)';
+                            target.style.boxShadow = 'none';
+                        }}
+                    >
+                        ← Back
+                    </button>
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '100vh',
+                    padding: '2rem',
+                    textAlign: 'center'
+                }}>
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '16px',
+                        padding: '3rem 2rem',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        maxWidth: '600px'
+                    }}>
+                        <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>📱</div>
+                        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                            Not in Mini App
+                        </h1>
+                        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#e0e0e0', marginBottom: '2rem' }}>
+                            Farcaster context is only available when running inside a Mini App. 
+                            Please open this app in one of the following:
+                        </p>
+                        
+                        <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '1rem',
+                            alignItems: 'center'
+                        }}>
+                            <div style={{
+                                background: 'rgba(139, 69, 255, 0.2)',
+                                padding: '1rem 1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(139, 69, 255, 0.3)',
+                                width: '100%'
+                            }}>
+                                <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>🟣 Farcaster App</h3>
+                                <p style={{ fontSize: '0.9rem', color: '#c0c0c0' }}>
+                                    Official Farcaster mobile app with Mini App support
+                                </p>
+                            </div>
+                            
+                            <div style={{
+                                background: 'rgba(0, 82, 255, 0.2)',
+                                padding: '1rem 1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(0, 82, 255, 0.3)',
+                                width: '100%'
+                            }}>
+                                <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>🔵 Base App</h3>
+                                <p style={{ fontSize: '0.9rem', color: '#c0c0c0' }}>
+                                    Base ecosystem app with Mini App integration
+                                </p>
+                            </div>
+                        </div>
+
+                        <p style={{ 
+                            fontSize: '0.9rem', 
+                            color: '#a0a0a0', 
+                            marginTop: '2rem',
+                            fontStyle: 'italic'
+                        }}>
+                            Context data includes user info, launch location, client details, and available features.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     const renderLocationContext = () => {
         if (!context?.location) {
-            return <p className="text-gray-500">No location context available</p>;
+                        return <p className="text-gray-400">No location context available</p>;
         }
 
         const { location } = context;
@@ -128,15 +287,64 @@ export default function Context() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-8">
-            <div className="text-center">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Farcaster Context</h1>
-                <p className="text-gray-600">Complete session context information</p>
+        <div style={{ 
+            minHeight: '100vh', 
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+            color: 'white',
+            position: 'relative'
+        }}>
+            {/* Back button */}
+            <div style={{
+                position: 'absolute',
+                top: '1rem',
+                left: '1rem'
+            }}>
+                <button
+                    onClick={() => window.history.back()}
+                    style={{
+                        background: '#f7d954',
+                        color: '#000',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        const target = e.target as HTMLButtonElement;
+                        target.style.background = '#f5d73a';
+                        target.style.transform = 'translateY(-2px)';
+                        target.style.boxShadow = '0 4px 15px rgba(247, 217, 84, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                        const target = e.target as HTMLButtonElement;
+                        target.style.background = '#f7d954';
+                        target.style.transform = 'translateY(0)';
+                        target.style.boxShadow = 'none';
+                    }}
+                >
+                    ← Back
+                </button>
             </div>
+            
+            <div className="max-w-4xl mx-auto p-6 space-y-8" style={{ paddingTop: '4rem' }}>
+                <div className="text-center">
+                    <h1 className="text-3xl font-bold mb-2">Farcaster Context</h1>
+                    <p className="text-gray-300">Complete session context information</p>
+                </div>
 
-            {/* User Information */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">User Information</h2>
+                {/* User Information */}
+                <section style={{ 
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '16px', 
+                    padding: '1.5rem',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <h2 className="text-xl font-semibold mb-4">User Information</h2>
                 {context?.user ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -161,20 +369,32 @@ export default function Context() {
                             ) : ' N/A'}
                         </div>
                     </div>
-                ) : (
-                    <p className="text-gray-500">No user information available</p>
-                )}
-            </section>
+                    ) : (
+                        <p className="text-gray-400">No user information available</p>
+                    )}
+                </section>
 
-            {/* Location Context */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">Location Context</h2>
-                {renderLocationContext()}
-            </section>
+                {/* Location Context */}
+                <section style={{ 
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '16px', 
+                    padding: '1.5rem',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <h2 className="text-xl font-semibold mb-4">Location Context</h2>
+                    {renderLocationContext()}
+                </section>
 
-            {/* Client Information */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">Client Information</h2>
+                {/* Client Information */}
+                <section style={{ 
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '16px', 
+                    padding: '1.5rem',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <h2 className="text-xl font-semibold mb-4">Client Information</h2>
                 {context?.client ? (
                     <div className="space-y-3">
                         <div>
@@ -200,7 +420,7 @@ export default function Context() {
                         )}
                         
                         {context.client.notificationDetails && (
-                            <div>
+        <div>
                                 <strong>Notifications Enabled:</strong>
                                 <div className="ml-4 text-sm bg-gray-50 p-2 rounded mt-1">
                                     URL: {context.client.notificationDetails.url}<br/>
@@ -209,14 +429,20 @@ export default function Context() {
                             </div>
                         )}
                     </div>
-                ) : (
-                    <p className="text-gray-500">No client information available</p>
-                )}
-            </section>
+                    ) : (
+                        <p className="text-gray-400">No client information available</p>
+                    )}
+                </section>
 
-            {/* Features */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">Available Features</h2>
+                {/* Features */}
+                <section style={{ 
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '16px', 
+                    padding: '1.5rem',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <h2 className="text-xl font-semibold mb-4">Available Features</h2>
                 {context?.features ? (
                     <div className="space-y-2">
                         <div className={`p-2 rounded ${context.features.haptics ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -228,18 +454,33 @@ export default function Context() {
                             </div>
                         )}
                     </div>
-                ) : (
-                    <p className="text-gray-500">No feature information available</p>
-                )}
-            </section>
+                    ) : (
+                        <p className="text-gray-400">No feature information available</p>
+                    )}
+                </section>
 
-            {/* Raw Context Data */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">Raw Context Data</h2>
-                <pre className="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-96">
-                    {JSON.stringify(context, null, 2)}
-                </pre>
-            </section>
+                {/* Raw Context Data */}
+                <section style={{ 
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '16px', 
+                    padding: '1.5rem',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <h2 className="text-xl font-semibold mb-4">Raw Context Data</h2>
+                    <pre style={{ 
+                        background: 'rgba(0, 0, 0, 0.3)', 
+                        padding: '1rem', 
+                        borderRadius: '8px', 
+                        fontSize: '0.75rem', 
+                        overflow: 'auto', 
+                        maxHeight: '24rem',
+                        color: '#f0f0f0'
+                    }}>
+                        {JSON.stringify(context, null, 2)}
+                    </pre>
+                </section>
+            </div>
         </div>
     );
 }
