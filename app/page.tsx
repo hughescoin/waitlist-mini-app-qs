@@ -51,6 +51,17 @@ export default function Home() {
     router.push("/success");
   };
 
+
+  const handleAddMiniApp= async () =>{
+    try {
+      const result = await sdk.actions.addMiniApp();
+      console.log("Mini app added:", result);
+    } catch (error) {
+      console.error("Error adding mini app:", error);
+    }
+  }
+  
+  
   return (
     <div className={styles.container}>
       <div className={styles.topButtons}>
@@ -88,6 +99,9 @@ export default function Home() {
             
             <button type="submit" className={styles.joinButton}>
               JOIN WAITLIST
+            </button>
+            <button onClick={handleAddMiniApp} type="submit" className={styles.joinButton}>
+              NOTIFICATIONS
             </button>
           </form>
         </div>
